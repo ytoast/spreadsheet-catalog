@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Messari Data Catalog</title>
+  <style>
+    /* General Styling */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+      padding: 15px;
+      font-size: 14px;
+      color: #333;
+      background-color: #f8f9fa;
+      overflow-x: hidden;
+    }
+
+    h3 {
+      margin-top: 0;
+      border-bottom: 1px solid #ddd;
+      padding-bottom: 5px;
+    }
+
+    label {
+      font-weight: bold;
+      margin-top: 15px;
+      display: block;
+      font-size: 13px;
+      color: #555;
+    }
+
+    /* Input, Select & Button Styling */
+    select {
+      width: 100%;
+      box-sizing: border-box;
+      padding: 8px;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+      margin-top: 4px;
+      margin-bottom: 15px;
+    }
+
+    .info {
+      font-size: 12px;
+      color: #666;
+      margin-top: 4px;
+    }
+
+    code {
+      background-color: #e0e0e0;
+      padding: 2px 5px;
+      border-radius: 3px;
+      font-family: 'Courier New', monospace;
+      font-size: 12px;
+      display: block;
+      margin-top: 5px;
+      word-break: break-all;
+    }
+
+    /* Tab Navigation Styling */
+    .tab-nav {
+      display: flex;
+      border-bottom: 1px solid #ccc;
+      margin-bottom: 15px;
+      flex-wrap: wrap;
+    }
+
+    .tab-link {
+      background: none;
+      border: none;
+      padding: 10px 12px;
+      cursor: pointer;
+      font-size: 13px;
+      color: #555;
+      border-radius: 4px 4px 0 0;
+      white-space: nowrap;
+    }
+
+    .tab-link.active {
+      font-weight: bold;
+      color: #4285f4;
+      border-bottom: 3px solid #4285f4;
+    }
+
+    .tab-content {
+      display: none;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    /* Data Catalog Styling */
+    .metric-card {
+      border: 1px solid #ddd;
+      border-radius: 4px;
+      padding: 12px;
+      margin-top: 10px;
+      background-color: #fff;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+    }
+
+    .metric-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-bottom: 5px;
+      gap: 10px;
+    }
+
+    .metric-name {
+      font-weight: bold;
+      color: #1a73e8;
+      font-size: 15px;
+      flex: 1;
+    }
+
+    .metric-slug {
+      font-family: 'Courier New', monospace;
+      font-size: 11px;
+      color: #333;
+      background-color: #eee;
+      padding: 2px 6px;
+      border-radius: 3px;
+      white-space: nowrap;
+    }
+
+    .metric-description {
+      font-size: 13px;
+      color: #444;
+      margin: 5px 0 0 0;
+      line-height: 1.4;
+    }
+
+    /* Loading spinner */
+    .spinner {
+      border: 3px solid #f3f3f3;
+      border-top: 3px solid #4285f4;
+      border-radius: 50%;
+      width: 30px;
+      height: 30px;
+      animation: spin 1s linear infinite;
+      margin: 20px auto;
+    }
+
+    @keyframes spin {
+      0% { transform: rotate(0deg); }
+      100% { transform: rotate(360deg); }
+    }
+
+    /* Docs section */
+    .doc-section {
+      margin-top: 20px;
+      padding: 15px;
+      background-color: #fff;
+      border: 1px solid #ddd;
+      border-radius: 4px;
+    }
+
+    .doc-section label {
+      margin-top: 0;
+      color: #1a73e8;
+      font-size: 14px;
+    }
+
+    .doc-section p {
+      margin: 8px 0;
+      font-size: 13px;
+      color: #555;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="tab-nav">
+    <button id="nav-catalog" class="tab-link" onclick="showTab('catalog')">Data Catalog</button>
+    <button id="nav-docs" class="tab-link" onclick="showTab('docs')">Docs & Examples</button>
+  </div>
+
+  <div id="catalog" class="tab-content">
+    <h3>Messari Data Catalog 📖</h3>
+    <label for="dataset-select">Dataset</label>
+    <select id="dataset-select">
+      <option value="">Loading...</option>
+    </select>
+    <div id="metrics-container">
+      <div class="spinner"></div>
+    </div>
+  </div>
+
+  <div id="docs" class="tab-content">
+    <h3>Docs & Examples 🚀</h3>
+    <p class="info">This plugin provides custom functions to pull Messari data directly into your sheet.</p>
+
+    <div class="doc-section">
+      <label>Get Latest Value</label>
+      <p>Returns the most recent timeseries value for a metric.</p>
+      <code>=MESSARI_LATEST_POINT("asset-price", "open", "bitcoin")</code>
+    </div>
+
+    <div class="doc-section">
+      <label>Get Value at Specific Time</label>
+      <p>Returns a single timeseries value at a specific date or timestamp.</p>
+      <code>=MESSARI_POINT("asset-price", "close", "ethereum", "2024-01-01")</code>
+    </div>
+
+    <div class="doc-section">
+      <label>Get Historical Series</label>
+      <p>Returns a 2D array of historical values between a start and end date, perfect for creating charts.</p>
+      <code>=MESSARI_SERIES("asset-price", "high", "bitcoin", "2024-01-01", "2024-01-31")</code>
+    </div>
+  </div>
+
+  <script>
+    // Global variable to hold catalog data
+    let messariCatalogData = [];
+
+    /**
+     * Runs when the page is first loaded.
+     */
+    document.addEventListener('DOMContentLoaded', function() {
+      showTab('catalog'); // Show the first tab by default
+      loadCatalogData();
+    });
+
+    /**
+     * Switches the visible tab.
+     * @param {string} tabName - The ID of the tab to show ('catalog', 'docs').
+     */
+    function showTab(tabName) {
+      // Hide all tab content
+      document.querySelectorAll('.tab-content').forEach(tab => {
+        tab.classList.remove('active');
+      });
+      // Deactivate all nav links
+      document.querySelectorAll('.tab-link').forEach(link => {
+        link.classList.remove('active');
+      });
+
+      // Show the selected tab and activate its link
+      document.getElementById(tabName).classList.add('active');
+      document.getElementById('nav-' + tabName).classList.add('active');
+    }
+
+    /**
+     * Fetches the data catalog from the Messari API and populates the UI.
+     */
+    async function loadCatalogData() {
+      const metricsContainer = document.getElementById('metrics-container');
+      const datasetSelect = document.getElementById('dataset-select');
+
+      try {
+        const response = await fetch('https://api.messari.io/timeseries/v1/catalog?spreadsheet=true', {
+          headers: {
+            'X-Spreadsheet-Integration': 'hosted-catalog'
+          }
+        });
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        messariCatalogData = data;
+
+        // Clear loading state
+        datasetSelect.innerHTML = '';
+
+        // Populate the dropdown
+        messariCatalogData.forEach(dataset => {
+          const option = document.createElement('option');
+          option.value = dataset.slug;
+          option.textContent = dataset.name.charAt(0).toUpperCase() + dataset.name.slice(1);
+          datasetSelect.appendChild(option);
+        });
+
+        // Add event listener and trigger initial population
+        datasetSelect.addEventListener('change', updateMetricsList);
+        updateMetricsList();
+
+      } catch (error) {
+        console.error('Failed to load catalog:', error);
+        metricsContainer.innerHTML = `<p class="info" style="color:red;">Failed to load data catalog: ${error.message}</p>`;
+        datasetSelect.innerHTML = '<option value="">Error loading datasets</option>';
+      }
+    }
+
+    /**
+     * Renders the list of metrics based on the selected dataset.
+     */
+    function updateMetricsList() {
+      const selectedSlug = document.getElementById('dataset-select').value;
+      const metricsContainer = document.getElementById('metrics-container');
+      metricsContainer.innerHTML = ''; // Clear previous metrics
+
+      const selectedDataset = messariCatalogData.find(d => d.slug === selectedSlug);
+
+      if (selectedDataset && selectedDataset.columns && selectedDataset.columns.length > 0) {
+        selectedDataset.columns.forEach(metric => {
+          const card = document.createElement('div');
+          card.className = 'metric-card';
+          card.innerHTML = `
+            <div class="metric-header">
+              <span class="metric-name">${metric.name}</span>
+              <span class="metric-slug">${metric.slug}</span>
+            </div>
+            <p class="metric-description">${metric.description || 'No description available.'}</p>
+          `;
+          metricsContainer.appendChild(card);
+        });
+      } else {
+        metricsContainer.innerHTML = '<p class="info">No metrics available for this dataset.</p>';
+      }
+    }
+  </script>
+</body>
+</html>
